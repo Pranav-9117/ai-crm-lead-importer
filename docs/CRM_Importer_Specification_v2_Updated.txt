@@ -1,0 +1,131 @@
+AI-Powered CRM CSV Importer
+Feature Specification & System Flow — REVISED
+Version: 2.0 (Revised)
+Status: Revised — scoped to actual submission deadline
+Original deadline in source assignment: 12 July 2026
+⚠ Revision Summary
+This version corrects a critical scope/timeline mismatch (original plan assumed weeks of build time; deadline is ~2 days out), fixes a workflow ordering issue (backend was being called before user confirmation), and adds business rules from the assignment that were missing from v1.0: allowed enum values, multi-email/mobile handling, skip-record rule, and CSV-safe output escaping. Database and object storage are now marked OPTIONAL per the assignment, not required infrastructure.
+1. Project Goal
+Build an AI-powered CSV Import System capable of importing CRM leads from any valid CSV format without requiring users to manually map columns. Instead of assuming predefined column names, the application leverages an LLM to intelligently understand the CSV structure and transform it into the GrowEasy CRM schema.
+Given the actual submission window, this revision prioritizes a working, well-engineered core flow (upload → preview → confirm → AI extraction → results) over auxiliary infrastructure. Bonus features are explicitly separated and time-boxed.
+2. Target Stack (Revised)
+Layer
+v1.0 (Original)
+v2.0 (Revised)
+Frontend
+Next.js
+Next.js (unchanged)
+Backend
+Node.js + Express + TypeScript
+Node.js + Express + TypeScript (unchanged)
+Database
+PostgreSQL (required)
+OPTIONAL — in-memory/stateless by default; Postgres only if time permits (assignment explicitly allows stateless)
+Object Storage
+AWS S3 (required)
+OPTIONAL — drop unless time permits; adds credential/deployment risk with no scoring benefit
+AI
+GPT-4.1 Mini
+GPT-4.1 Mini (unchanged — satisfies 'OpenAI or equivalent')
+Deployment
+Vercel + Railway/Render
+Vercel (frontend) + Render/Railway (backend) — unchanged, but as single free-tier services, not multi-service infra
+
+3. Corrected System Workflow
+The original workflow called the backend (S3 upload + Import Job creation) immediately on file upload — before the user confirms. This violates the assignment's explicit requirement that no backend/AI call happens until after Confirm. Corrected flow:
+User uploads CSV → file is parsed and previewed entirely client-side (e.g. PapaParse in the browser). No network call yet.
+Preview table renders with sticky headers, horizontal/vertical scroll. No AI processing occurs at this stage.
+User clicks Confirm → only now does the frontend call the backend API, sending the parsed CSV rows.
+Backend validates payload → splits rows into batches → sends each batch to GPT-4.1 Mini with the mapping prompt.
+Backend validates AI output against schema/enum rules → separates successful vs skipped records.
+Backend returns a single structured JSON response: imported records, skipped records (with reasons), totals.
+Frontend renders the result table: successfully parsed records, skipped records, total imported, total skipped.
+Optional (if time permits): persist the Import Job / Leads / Skipped records to Postgres and the original file to S3, purely as bonus depth — not required for the core flow to work.
+4. AI Prompt Engineering — Rules That Must Be Explicit in the Prompt
+v1.0 referred to these only as generic placeholders ('Allowed enums', 'Mapping instructions'). They must be written into the actual system prompt verbatim, since this is the primary evaluation criterion.
+4.1 Allowed crm_status values (enum — reject anything else)
+GOOD_LEAD_FOLLOW_UP
+DID_NOT_CONNECT
+BAD_LEAD
+SALE_DONE
+4.2 Allowed data_source values (enum — leave blank if no confident match)
+leads_on_demand
+meridian_tower
+eden_park
+varah_swamy
+sarjapur_plots
+4.3 Multi-value fields (missing from v1.0 Feature 4.2)
+Multiple emails found in a row → use the first as email; append the rest into crm_note.
+Multiple mobile numbers found in a row → use the first as mobile_without_country_code; append the rest into crm_note.
+crm_note is also the catch-all for remarks, follow-up notes, and any useful info that doesn't map to a defined field.
+4.4 Skip rule (must be enforced in validation, not just prompted)
+A record is skipped if it has neither an email NOR a mobile number. All other records must be kept, even if partially incomplete.
+Every skip must be logged with: row number, reason, and the original raw row — for the skipped-records table in the UI.
+4.5 Date format
+created_at must always be a value parseable by JavaScript's new Date(created_at).
+4.6 CSV-safety of AI output (missing from v1.0)
+Each returned record must remain expressible as a single CSV row — no unintended line breaks.
+If a note or field legitimately needs a line break, it must be escaped (e.g. \n) rather than inserted as a literal newline, so any CSV export stays valid.
+This applies directly to the 'Download Processed CSV' feature in Phase 5 — the export step must escape newlines/commas/quotes per CSV spec (RFC 4180), not just concatenate raw AI text.
+5. Revised Feature Roadmap (time-boxed)
+Given the ~2-day window, features are split into MVP (must ship) and Stretch (only if MVP is done early and stable). This replaces the flat 10-phase list in v1.0, which did not distinguish required from bonus work by priority.
+5.1 MVP — required for a scoreable submission
+Area
+Must include
+Frontend
+Drag & drop + file picker upload; client-side parse & preview (sticky header, scroll); Confirm button gating the API call; results table with imported/skipped counts; basic loading & error states
+Backend
+POST /api/import endpoint; CSV row validation; batching (e.g. 50-100 rows/batch); GPT-4.1 Mini call with the full rule set from Section 4; output validation against schema/enums; structured JSON response
+AI logic
+All rules in Section 4 implemented and tested against messy sample CSVs (Facebook export style, Google Ads style, manual spreadsheet style)
+Code quality
+TypeScript types for CRM record/API contracts; clean error handling; readable folder structure (frontend/, backend/)
+Deployment
+One hosted frontend URL + one hosted backend URL (or combined); public GitHub repo; README with setup steps
+
+5.2 Stretch — only after MVP is working end-to-end
+Priority
+Feature
+High value, low cost
+Progress indicator during AI processing; retry on a failed batch; dark mode
+Medium
+Virtualized table for large CSVs; basic unit tests on the mapping/validation logic
+Lower priority given timeline
+PostgreSQL persistence + import history; AWS S3 original-file storage; SSE streaming progress; analytics dashboard; Docker; reprocessing from storage
+
+Recommendation
+Treat Postgres, S3, SSE, analytics, Docker, and import history as explicitly optional given the timeline — the assignment allows a stateless app, and evaluation weighs prompt engineering, backend/frontend quality, and code quality far more than infrastructure breadth. Cutting these is not a quality compromise; it's the correct prioritization for the time available.
+6. Database Schema (optional — only if pursuing stretch persistence)
+Unchanged from v1.0 if implemented, but now explicitly optional. If skipped, keep the same field names in-memory/in the JSON response so the schema can be added later without breaking contracts.
+Entity
+Key fields
+ImportJob
+id, filename, s3_key (if using S3), status, total_rows, processed_rows, imported_rows, skipped_rows, timestamps
+Lead
+id, import_job_id, name, email, country_code, mobile_without_country_code, company, city, state, country, lead_owner, crm_status, crm_note, data_source, possession_time, description
+SkippedRecord
+id, import_job_id, row_number, reason, raw_row (JSON), created_at
+ImportBatch
+id, import_job_id, batch_number, rows_processed, tokens, estimated_cost, status
+
+7. Final Deliverables Checklist
+Publicly hosted application URL
+Public GitHub repository URL
+README with setup instructions
+Position applied for (Intern / Full-Time) stated in the submission email
+Email sent to varun@groweasy.ai with all of the above before 12 July 2026
+
+Version 2.1 Update — Final Implementation Decisions
+This update refines the MVP while keeping the project achievable within the submission timeline. The focus remains a polished end-to-end AI CSV importer with reliable AI processing.
+Configurable AI Batch Size
+Use environment variables (AI_BATCH_SIZE and MAX_BATCH_RETRIES) instead of hardcoded values.
+AI Response Validation Layer
+Validate every AI response before returning it: JSON parsing, schema validation, enum validation, date normalization, phone/email normalization, and skip-rule enforcement.
+Retry Policy
+Retry only transient failures (HTTP 429, HTTP 5xx, network timeouts). Maximum 3 retries using exponential backoff (2s, 4s, 8s). Retry only the failed batch.
+Prompt Versioning
+Store prompts as versioned files (e.g., prompt_v1.md) for easier iteration and testing.
+Stretch Feature Priority
+After MVP: (1) Progress indicator, (2) Retry failed batches, (3) Dark mode, (4) Virtualized table, (5) Unit tests, (6) PostgreSQL + Import History, (7) AWS S3 storage, (8) Docker.
+Updated AI Processing Flow
+User Upload↓Client-side Preview↓Confirm Import↓Backend↓Batch Records↓GPT-4.1 Mini↓AI Response Validation↓Normalization↓Business Rule Validation↓Imported / Skipped Records↓Frontend Results
