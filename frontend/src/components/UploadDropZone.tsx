@@ -50,9 +50,8 @@ export function UploadDropZone({ onFileSelect }: UploadDropZoneProps) {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`w-full max-w-2xl bg-surface-container-lowest rounded-xl border border-outline-variant p-xl text-center flex flex-col items-center transition-all duration-300 hover:shadow-lg ${
-        isDragging ? 'scale-[1.01] border-primary bg-surface-container-low' : ''
-      }`}
+      className={`w-full max-w-2xl bg-surface-container-lowest rounded-xl border border-outline-variant p-xl text-center flex flex-col items-center transition-all duration-300 hover:shadow-lg ${isDragging ? 'scale-[1.01] border-primary bg-surface-container-low' : ''
+        }`}
     >
       {/* Animated Background Decorative Element */}
       <div className="relative w-48 h-48 mb-lg flex items-center justify-center">
@@ -74,7 +73,7 @@ export function UploadDropZone({ onFileSelect }: UploadDropZoneProps) {
           Upload your first CSV to begin
         </h3>
         <p className="font-body-lg text-body-lg text-secondary max-w-md mx-auto">
-          Quickly map your local spreadsheet data to your CRM leads. Support for .csv, .xlsx, and .tsv formats.
+          Quickly map your local spreadsheet data to your CRM leads. Support for .csv format.
         </p>
       </div>
 
@@ -87,7 +86,7 @@ export function UploadDropZone({ onFileSelect }: UploadDropZoneProps) {
           ref={fileInputRef}
           id="file-input"
           type="file"
-          accept=".csv,.tsv,.xlsx"
+          accept=".csv"
           className="hidden"
           onChange={handleFileChange}
         />
@@ -99,7 +98,7 @@ export function UploadDropZone({ onFileSelect }: UploadDropZoneProps) {
             Drag and drop your file here, or{' '}
             <span className="text-primary font-bold">browse local files</span>
           </p>
-          <p className="font-mono-sm text-secondary mt-base opacity-60">Maximum size: 50MB</p>
+          <p className="font-mono-sm text-secondary mt-base opacity-60">Maximum size: 5MB</p>
         </div>
       </div>
 
@@ -113,19 +112,7 @@ export function UploadDropZone({ onFileSelect }: UploadDropZoneProps) {
         Browse Files
       </button>
 
-      {/* Helper Footer */}
-      <div className="mt-xl pt-lg border-t border-outline-variant/30 w-full flex justify-between items-center">
-        <div className="flex items-center gap-sm text-secondary">
-          <span className="material-symbols-outlined text-sm">verified_user</span>
-          <span className="font-label-md">Secure SSL encryption</span>
-        </div>
-        <div className="flex items-center gap-sm text-secondary">
-          <span className="material-symbols-outlined text-sm">lightbulb</span>
-          <a href="#" className="font-label-md hover:text-primary transition-colors">
-            How to format CSV?
-          </a>
-        </div>
-      </div>
+
     </div>
   );
 }

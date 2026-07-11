@@ -9,7 +9,7 @@ import {
 import { CRMStatusEnum, DataSourceEnum } from '../types/enums.js';
 import { CSVRow } from '../types/csv.js';
 
-describe('SPEC-0005: AI Response Validation & Domain Normalization', () => {
+describe('AI Response Validation & Domain Normalization', () => {
   describe('1. Domain Normalizers (`domainNormalizers.ts`)', () => {
     it('normalizePhone should strip non-numeric characters and handle +91 10-digit extraction', () => {
       expect(normalizePhone('+91 (987) 654-3210')).toBe('9876543210');
@@ -56,7 +56,7 @@ describe('SPEC-0005: AI Response Validation & Domain Normalization', () => {
       }
     });
 
-    it('should nullify invalid CRM status and data source enums safely (Enum Nullification Check)', () => {
+    it('should nullify invalid CRM status and normalize invalid data_source enums to "" safely', () => {
       const input = {
         crm_status: 'SUPER_HOT',
         data_source: 'internal_excel',
@@ -65,7 +65,7 @@ describe('SPEC-0005: AI Response Validation & Domain Normalization', () => {
       expect(parsed.success).toBe(true);
       if (parsed.success) {
         expect(parsed.data.crm_status).toBeNull();
-        expect(parsed.data.data_source).toBeNull();
+        expect(parsed.data.data_source).toBe('');
       }
     });
 

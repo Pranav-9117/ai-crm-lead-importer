@@ -53,7 +53,7 @@ export const FileSummaryCard: React.FC<FileSummaryCardProps> = ({ meta, onClear 
               </span>
             </div>
             <p className="font-mono-sm text-secondary text-xs mt-0.5">
-              {formatFileSize(meta.sizeBytes)} • Ready for local review
+              {formatFileSize(meta.sizeBytes)} | Ready for local review
             </p>
           </div>
         </div>

@@ -11,7 +11,7 @@ export function createApp(): Application {
   app.use(cors());
 
   // JSON Body Parser
-  app.use(express.json({ limit: '25mb' }));
+  app.use(express.json({ limit: '100mb' }));
 
   // API Routes
   app.use('/api', apiRouter);

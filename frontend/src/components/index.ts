@@ -5,4 +5,5 @@ export * from './upload/CsvDropzone';
 export * from './upload/CsvPreviewTable';
 export * from './upload/FileSummaryCard';
 export * from './upload/UploadOrchestrator';
+export * from './upload/AiProcessingProgress';
 export * from './results';

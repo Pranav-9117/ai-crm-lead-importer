@@ -47,7 +47,7 @@ export class ResponseValidator {
       // Track enum coercions for telemetry
       if (
         (rawAi.crm_status !== undefined && rawAi.crm_status !== null && coerced.crm_status === null) ||
-        (rawAi.data_source !== undefined && rawAi.data_source !== null && coerced.data_source === null)
+        (rawAi.data_source !== undefined && rawAi.data_source !== null && rawAi.data_source !== '' && coerced.data_source === '')
       ) {
         enumCoercionsCount++;
       }
@@ -89,7 +89,8 @@ export class ResponseValidator {
         lead_owner: coerced.lead_owner || null,
         crm_status: coerced.crm_status, // Already strictly enum-checked by Zod
         crm_note: cleanNote,
-        data_source: coerced.data_source, // Already strictly enum-checked by Zod
+        data_source: coerced.data_source || "", // Always canonical DataSourceEnum or empty string ""
+
         possession_time: coerced.possession_time || null,
         description: cleanDesc,
         created_at: cleanDate,

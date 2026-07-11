@@ -16,7 +16,7 @@ export interface LeadDTO {
   lead_owner: string | null;               // Assigned representative name or ID
   crm_status: CRMStatusEnum | null;        // Strict enum match
   crm_note: string;                        // Catch-all for remarks, overflow emails/mobiles
-  data_source: DataSourceEnum | null;      // Strict enum match or null
+  data_source: DataSourceEnum | "";        // Strict enum match or empty string ""
   possession_time: string | null;          // Timeline string e.g. "Immediate", "6 months"
   description: string | null;              // General background or inquiry text
   created_at: string;                      // ISO 8601 string parseable by `new Date()`. If the source CSV does not contain a valid timestamp, the backend generates an ISO 8601 timestamp during normalization.

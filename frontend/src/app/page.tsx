@@ -14,6 +14,7 @@ import {
   TopAppBar,
   UploadOrchestrator,
   ImportResultsDashboard,
+  AiProcessingProgress,
 } from '../components';
 import { apiClient } from '../services';
 import { CSVRow, CsvFileMetadata, ImportResponseDTO } from '../types';
@@ -23,6 +24,7 @@ export default function HomePage() {
   const [importResult, setImportResult] = useState<ImportResponseDTO | null>(null);
   const [isImporting, setIsImporting] = useState<boolean>(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [activeMeta, setActiveMeta] = useState<{ filename: string; totalRows: number } | null>(null);
 
   // In-memory session history of completed imports
   const [importHistory, setImportHistory] = useState<
@@ -41,6 +43,7 @@ export default function HomePage() {
 
 
   const handleConfirmImport = async (rows: CSVRow[], meta: CsvFileMetadata) => {
+    setActiveMeta({ filename: meta.filename, totalRows: rows.length });
     setIsImporting(true);
     setImportError(null);
     try {
@@ -139,8 +142,8 @@ export default function HomePage() {
                 <div className="p-12 rounded-2xl bg-surface-container border border-outline-variant text-center space-y-3">
                   <FileSpreadsheet className="w-12 h-12 text-secondary/40 mx-auto" />
                   <h4 className="font-semibold text-on-surface">No History Yet</h4>
-                  <p className="text-xs text-secondary max-w-md mx-auto">
-                    You haven’t completed any imports during this browser session yet. Switch to the Import CSV tab to upload your first file!
+                  <p className="text-secondary max-w-md font-body-md text-sm leading-relaxed">
+                    You haven't completed any imports during this browser session yet. Switch to the Import CSV tab to upload your first file!
                   </p>
                 </div>
               ) : (
@@ -160,17 +163,17 @@ export default function HomePage() {
                           </span>
                         </div>
                         <p className="text-xs text-secondary">
-                          Processed in {(item.durationMs / 1000).toFixed(2)}s • Total {item.totalRows} rows
+                          Processed in {(item.durationMs / 1000).toFixed(2)}s | Total {item.totalRows} rows
                         </p>
                       </div>
 
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-3 text-xs font-semibold">
                           <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            ✓ {item.imported} Imported
+                            {item.imported} Imported
                           </span>
                           <span className="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                            ⚠ {item.skipped} Skipped
+                            {item.skipped} Skipped
                           </span>
                         </div>
                         <button
@@ -205,29 +208,20 @@ export default function HomePage() {
                 </div>
               )}
 
-              {/* Processing Loading State */}
+              {/* Processing Loading State with Real-Time Progress Indicator */}
               {isImporting ? (
-                <div className="flex flex-col items-center justify-center p-12 bg-surface-container border border-outline-variant rounded-2xl shadow-xl max-w-lg w-full text-center space-y-4 animate-fadeIn">
-                  <div className="p-4 rounded-full bg-primary/10 border border-primary/20">
-                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-on-surface">
-                      Processing AI Extraction & Validation
-                    </h3>
-                    <p className="text-xs text-secondary mt-1 max-w-sm">
-                      Orchestrating batch processing, domain normalization, and business skip rules...
-                    </p>
-                  </div>
-                </div>
+                <AiProcessingProgress
+                  totalRows={activeMeta?.totalRows || 0}
+                  filename={activeMeta?.filename || 'crm_leads.csv'}
+                />
               ) : importResult ? (
-                /* Results Dashboard (SPEC-0007) */
+                /* Results Dashboard */
                 <ImportResultsDashboard
                   response={importResult}
                   onResetImport={handleReset}
                 />
               ) : (
-                /* Upload Orchestrator (SPEC-0002) */
+                /* Upload Orchestrator */
                 <UploadOrchestrator onConfirm={handleConfirmImport} />
               )}
             </div>

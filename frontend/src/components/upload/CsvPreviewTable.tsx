@@ -1,14 +1,30 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CsvPreviewTableProps, MAX_PREVIEW_ROWS } from '../../types';
+import { useVirtualScroll } from '../../hooks';
+import { Zap, Table as TableIcon } from 'lucide-react';
 
 export const CsvPreviewTable: React.FC<CsvPreviewTableProps> = ({
   rows,
   columns,
   maxPreviewRows = MAX_PREVIEW_ROWS,
 }) => {
-  const displayRows = rows.slice(0, maxPreviewRows);
+  const [isVirtualized, setIsVirtualized] = useState<boolean>(rows && rows.length > maxPreviewRows);
+
+  const displayRows = isVirtualized ? rows : rows.slice(0, maxPreviewRows);
+
+  const {
+    containerRef,
+    virtualItems,
+    totalHeight,
+    handleScroll,
+  } = useVirtualScroll<HTMLDivElement>({
+    totalItems: displayRows.length,
+    rowHeight: 41, // Average row height in px
+    containerHeight: 480,
+    bufferRows: 12,
+  });
 
   if (!rows || rows.length === 0 || !columns || columns.length === 0) {
     return (
@@ -19,23 +35,54 @@ export const CsvPreviewTable: React.FC<CsvPreviewTableProps> = ({
   }
 
   return (
-    <div className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg overflow-hidden flex flex-col">
+    <div className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg overflow-hidden flex flex-col animate-fadeIn">
       {/* Table Header / Title Bar */}
-      <div className="px-lg py-md border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
-        <div className="flex items-center gap-sm">
-          <span className="material-symbols-outlined text-primary text-lg">table_chart</span>
-          <h4 className="font-headline-md text-body-lg font-bold text-on-surface">
-            Data Preview
-          </h4>
+      <div className="px-lg py-md border-b border-outline-variant bg-surface-container-low flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="material-symbols-outlined text-primary text-xl">table_chart</span>
+          <div>
+            <h4 className="font-headline-md text-body-lg font-bold text-on-surface flex items-center gap-2">
+              <span>Data Preview Dashboard</span>
+              {isVirtualized && (
+                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
+                  <Zap className="w-3 h-3 text-primary animate-pulse" />
+                  <span>Virtualized DOM</span>
+                </span>
+              )}
+            </h4>
+          </div>
         </div>
-        <div className="font-label-md text-secondary text-xs">
-          Showing <span className="font-bold text-on-surface">{displayRows.length}</span> of{' '}
-          <span className="font-bold text-on-surface">{rows.length.toLocaleString()}</span> rows
+
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          {rows.length > maxPreviewRows && (
+            <button
+              onClick={() => setIsVirtualized(!isVirtualized)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
+                isVirtualized
+                  ? 'bg-primary text-on-primary hover:bg-primary/90'
+                  : 'bg-surface border border-outline-variant text-secondary hover:text-on-surface hover:bg-surface-dim'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>
+                {isVirtualized
+                  ? `Virtual Scroll Mode (All ${rows.length.toLocaleString()} Rows)`
+                  : `Switch to Virtualized Table (${rows.length.toLocaleString()} Rows)`}
+              </span>
+            </button>
+          )}
+
+          <div className="font-label-md text-secondary text-xs px-2 py-1 rounded bg-surface border border-outline-variant font-mono">
+            Showing <span className="font-bold text-on-surface">{displayRows.length.toLocaleString()}</span> of{' '}
+            <span className="font-bold text-on-surface">{rows.length.toLocaleString()}</span> rows
+          </div>
         </div>
       </div>
 
-      {/* Scrollable Sticky Table Canvas */}
+      {/* Scrollable Sticky/Virtualized Table Canvas */}
       <div
+        ref={containerRef}
+        onScroll={isVirtualized ? handleScroll : undefined}
         role="region"
         aria-label="CSV Data Preview Table"
         tabIndex={0}
@@ -61,45 +108,102 @@ export const CsvPreviewTable: React.FC<CsvPreviewTableProps> = ({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-outline-variant/50 font-body-md text-xs">
-            {displayRows.map((row, idx) => (
-              <tr
-                key={idx}
-                className="hover:bg-surface-container-low/60 transition-colors group"
-              >
-                <td className="px-4 py-2 border-r border-outline-variant/60 bg-surface-container-lowest group-hover:bg-surface-container-low/60 text-secondary font-mono-sm sticky left-0 z-10 text-center select-none transition-colors">
-                  {idx + 1}
-                </td>
-                {columns.map((col, colIdx) => {
-                  const cellValue = row[col];
-                  const hasValue = cellValue !== undefined && cellValue !== null && cellValue !== '';
-                  return (
-                    <td
-                      key={`${idx}-${colIdx}`}
-                      className="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis max-w-[240px]"
-                      title={hasValue ? String(cellValue) : ''}
-                    >
-                      {hasValue ? (
-                        <span className="text-on-surface">{cellValue}</span>
-                      ) : (
-                        <span className="text-secondary/50 italic">null</span>
-                      )}
+
+          {isVirtualized ? (
+            /* VIRTUALIZED RENDERING BODY */
+            <tbody
+              className="divide-y divide-outline-variant/50 font-body-md text-xs relative"
+              style={{ height: `${totalHeight}px` }}
+            >
+              {virtualItems.map(({ index, offsetTop }) => {
+                const row = displayRows[index];
+                if (!row) return null;
+
+                return (
+                  <tr
+                    key={index}
+                    className="hover:bg-surface-container-low/60 transition-colors group absolute left-0 right-0 flex w-full"
+                    style={{ top: `${offsetTop}px`, height: '41px' }}
+                  >
+                    <td className="px-4 py-2 border-r border-outline-variant/60 bg-surface-container-lowest group-hover:bg-surface-container-low/60 text-secondary font-mono sticky left-0 z-10 w-16 text-center select-none flex items-center justify-center shrink-0">
+                      {index + 1}
                     </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
+                    {columns.map((col, colIdx) => {
+                      const cellValue = row[col];
+                      const hasValue = cellValue !== undefined && cellValue !== null && cellValue !== '';
+                      return (
+                        <td
+                          key={`${index}-${colIdx}`}
+                          className="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis min-w-[140px] flex-1 flex items-center"
+                          title={hasValue ? String(cellValue) : ''}
+                        >
+                          {hasValue ? (
+                            <span className="text-on-surface truncate">{cellValue}</span>
+                          ) : (
+                            <span className="text-secondary/50 italic">null</span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          ) : (
+            /* STANDARD RENDERING BODY */
+            <tbody className="divide-y divide-outline-variant/50 font-body-md text-xs">
+              {displayRows.map((row, idx) => (
+                <tr
+                  key={idx}
+                  className="hover:bg-surface-container-low/60 transition-colors group"
+                >
+                  <td className="px-4 py-2 border-r border-outline-variant/60 bg-surface-container-lowest group-hover:bg-surface-container-low/60 text-secondary font-mono sticky left-0 z-10 text-center select-none transition-colors">
+                    {idx + 1}
+                  </td>
+                  {columns.map((col, colIdx) => {
+                    const cellValue = row[col];
+                    const hasValue = cellValue !== undefined && cellValue !== null && cellValue !== '';
+                    return (
+                      <td
+                        key={`${idx}-${colIdx}`}
+                        className="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis max-w-[240px]"
+                        title={hasValue ? String(cellValue) : ''}
+                      >
+                        {hasValue ? (
+                          <span className="text-on-surface">{cellValue}</span>
+                        ) : (
+                          <span className="text-secondary/50 italic">null</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          )}
         </table>
       </div>
 
-      {/* Truncation Notice Banner */}
-      {rows.length > maxPreviewRows && (
-        <div className="px-lg py-sm bg-surface-container-low border-t border-outline-variant text-xs font-label-md text-secondary text-center">
-          Showing preview of first <strong className="text-on-surface">{maxPreviewRows}</strong> rows out of{' '}
-          <strong className="text-on-surface">{rows.length.toLocaleString()}</strong> total rows. All rows will be processed upon confirmation.
-        </div>
-      )}
+      {/* Truncation / Virtualization Footer Notice */}
+      <div className="px-lg py-sm bg-surface-container-low border-t border-outline-variant text-xs font-label-md text-secondary text-center flex items-center justify-center gap-2">
+        {isVirtualized ? (
+          <>
+            <Zap className="w-3.5 h-3.5 text-primary" />
+            <span>
+              Rendering <strong className="text-on-surface">all {rows.length.toLocaleString()} rows</strong> using Windowed DOM Virtualization for maximum browser performance.
+            </span>
+          </>
+        ) : rows.length > maxPreviewRows ? (
+          <span>
+            Showing preview of first <strong className="text-on-surface">{maxPreviewRows}</strong> rows out of{' '}
+            <strong className="text-on-surface">{rows.length.toLocaleString()}</strong> total rows. Click <strong>Switch to Virtualized Table</strong> to inspect all rows instantly.
+          </span>
+        ) : (
+          <span>
+            All <strong className="text-on-surface">{rows.length}</strong> rows loaded and ready for AI ingestion.
+          </span>
+        )}
+      </div>
     </div>
   );
 };

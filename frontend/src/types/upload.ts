@@ -1,9 +1,9 @@
 import { CSVRow } from './csv';
 
 /**
- * Maximum allowed CSV file size in bytes (15 MB).
+ * Maximum allowed CSV file size in bytes (5 MB).
  */
-export const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024;
+export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
 /**
  * Maximum number of sample rows rendered in the client-side preview table

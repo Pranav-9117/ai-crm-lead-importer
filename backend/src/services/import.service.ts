@@ -5,7 +5,7 @@ import { BatchProcessor } from './batchProcessingFramework.service.js';
 
 /**
  * The service representing the application entry point for import processing.
- * Orchestrates batch execution via BatchProcessor (SPEC-0006).
+ * Orchestrates batch execution via BatchProcessor.
  */
 export class ImportService {
   private batchProcessor: BatchProcessor;

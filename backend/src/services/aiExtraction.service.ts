@@ -30,7 +30,7 @@ export class AIExtractionEngine {
 
   /**
    * Executes a single extraction request against OpenAI.
-   * Note: Retries and exponential backoff are handled entirely by SPEC-0006.
+   * Note: Retries and exponential backoff are handled by the batch processor.
    */
   public async extractBatch(
     jobId: string,

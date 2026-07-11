@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { LeadDTO, CRMStatusEnum } from '../../types';
-import { useSortableData } from '../../hooks';
+import { ArrowUpDown, ArrowUp, ArrowDown, Zap, Table as TableIcon } from 'lucide-react';
+import { LeadDTO } from '../../types';
+import { useSortableData, useVirtualScroll } from '../../hooks';
 import { PaginationControls } from './PaginationControls';
 
 export interface ImportedLeadsTableProps {
@@ -11,6 +11,7 @@ export interface ImportedLeadsTableProps {
 export const ImportedLeadsTable: React.FC<ImportedLeadsTableProps> = ({ records }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [isVirtualized, setIsVirtualized] = useState(false);
 
   const { items: sortedRecords, requestSort, sortConfig } = useSortableData<LeadDTO>(
     records,
@@ -21,6 +22,20 @@ export const ImportedLeadsTable: React.FC<ImportedLeadsTableProps> = ({ records 
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
+
+  const displayRecords = isVirtualized ? sortedRecords : paginatedRecords;
+
+  const {
+    containerRef,
+    virtualItems,
+    totalHeight,
+    handleScroll,
+  } = useVirtualScroll<HTMLDivElement>({
+    totalItems: displayRecords.length,
+    rowHeight: 60, // Estimated lead row height in px
+    containerHeight: 520,
+    bufferRows: 10,
+  });
 
   const renderSortIcon = (key: keyof LeadDTO) => {
     if (sortConfig.key !== key) {
@@ -33,58 +48,88 @@ export const ImportedLeadsTable: React.FC<ImportedLeadsTableProps> = ({ records 
     );
   };
 
-  const renderStatusBadge = (status: CRMStatusEnum | null) => {
-    if (!status) {
-      return (
-        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-surface border border-outline-variant text-secondary">
-          Unassigned
-        </span>
-      );
-    }
-    const statusMap: Record<CRMStatusEnum, { bg: string; text: string; label: string }> = {
-      [CRMStatusEnum.GOOD_LEAD_FOLLOW_UP]: {
-        bg: 'bg-emerald-500/10 border-emerald-500/20',
-        text: 'text-emerald-400',
-        label: 'Good Lead / Follow Up',
-      },
-      [CRMStatusEnum.SALE_DONE]: {
-        bg: 'bg-blue-500/10 border-blue-500/20',
-        text: 'text-blue-400',
-        label: 'Sale Done',
-      },
-      [CRMStatusEnum.DID_NOT_CONNECT]: {
-        bg: 'bg-amber-500/10 border-amber-500/20',
-        text: 'text-amber-400',
-        label: 'Did Not Connect',
-      },
-      [CRMStatusEnum.BAD_LEAD]: {
-        bg: 'bg-rose-500/10 border-rose-500/20',
-        text: 'text-rose-400',
-        label: 'Bad Lead',
-      },
-    };
 
-    const config = statusMap[status] || {
-      bg: 'bg-surface border-outline-variant',
-      text: 'text-on-surface',
-      label: status,
-    };
+
+  const renderRowContent = (lead: LeadDTO, idx: number) => {
+    const phoneStr = lead.mobile_without_country_code
+      ? `${lead.country_code || '+91'} ${lead.mobile_without_country_code}`
+      : '-';
+    const locationStr = [lead.city, lead.state].filter(Boolean).join(', ');
 
     return (
-      <span
-        className={`px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${config.bg} ${config.text}`}
-      >
-        {config.label}
-      </span>
+      <>
+        <td className="py-3.5 px-4 font-semibold text-on-surface">
+          {lead.name || <span className="text-secondary italic">No Name</span>}
+        </td>
+        <td className="py-3.5 px-4 font-mono text-xs text-on-surface/80">
+          {lead.email || <span className="text-secondary italic font-sans">-</span>}
+        </td>
+        <td className="py-3.5 px-4 font-mono text-xs text-on-surface/80">
+          {phoneStr}
+        </td>
+        <td className="py-3.5 px-4">
+          <div className="flex flex-col">
+            <span className="font-medium text-on-surface">
+              {lead.company || '-'}
+            </span>
+            {locationStr && (
+              <span className="text-xs text-secondary">{locationStr}</span>
+            )}
+          </div>
+        </td>
+        <td className="py-3.5 px-4 font-mono text-xs text-on-surface">
+          {lead.crm_status || ''}
+        </td>
+        <td className="py-3.5 px-4 max-w-xs text-xs text-secondary truncate" title={lead.crm_note}>
+          {lead.crm_note || '-'}
+        </td>
+        <td className="py-3.5 px-4 font-mono text-xs text-secondary">
+          {lead.data_source || ''}
+        </td>
+      </>
     );
   };
 
   return (
     <div className="w-full bg-surface-container border border-outline-variant rounded-2xl shadow-xl overflow-hidden flex flex-col">
-      <div className="overflow-x-auto flex-1">
+      {/* Table Top Controls / Virtualization Toggle */}
+      <div className="px-6 py-3 border-b border-outline-variant bg-surface/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-on-surface flex items-center gap-1.5">
+            <TableIcon className="w-4 h-4 text-primary" />
+            <span>Table View Mode:</span>
+          </span>
+          <span className={`text-xs px-2 py-0.5 rounded font-mono font-bold ${isVirtualized ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-surface border border-outline-variant text-secondary'}`}>
+            {isVirtualized ? 'Windowed Virtual Scroll (All Rows)' : 'Standard Paginated Table'}
+          </span>
+        </div>
+
+        <button
+          onClick={() => setIsVirtualized(!isVirtualized)}
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
+            isVirtualized
+              ? 'bg-surface border border-outline-variant text-on-surface hover:bg-surface-dim'
+              : 'bg-primary text-on-primary hover:bg-primary/90'
+          }`}
+        >
+          <Zap className="w-3.5 h-3.5" />
+          <span>
+            {isVirtualized
+              ? 'Switch to Paginated View'
+              : `Switch to Virtual Scroll Mode (${sortedRecords.length} Rows)`}
+          </span>
+        </button>
+      </div>
+
+      {/* Scrollable Table Canvas */}
+      <div
+        ref={containerRef}
+        onScroll={isVirtualized ? handleScroll : undefined}
+        className={`${isVirtualized ? 'max-h-[520px] overflow-y-auto' : 'overflow-x-auto'} flex-1 relative scrollbar-thin`}
+      >
         <table className="w-full text-left border-collapse min-w-[900px]">
-          <thead>
-            <tr className="border-b border-outline-variant bg-surface/80 text-secondary text-xs font-label-md uppercase tracking-wider font-bold">
+          <thead className="sticky top-0 z-20 shadow-sm">
+            <tr className="border-b border-outline-variant bg-surface-container-high text-secondary text-xs font-label-md uppercase tracking-wider font-bold">
               <th
                 onClick={() => requestSort('name')}
                 className="py-3.5 px-4 cursor-pointer group hover:text-on-surface transition-colors select-none"
@@ -142,70 +187,92 @@ export const ImportedLeadsTable: React.FC<ImportedLeadsTableProps> = ({ records 
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-outline-variant/60 text-sm text-on-surface">
-            {paginatedRecords.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="py-12 text-center text-secondary font-medium">
-                  No imported records match the current filter criteria.
-                </td>
-              </tr>
-            ) : (
-              paginatedRecords.map((lead, idx) => {
-                const phoneStr = lead.mobile_without_country_code
-                  ? `${lead.country_code || '+91'} ${lead.mobile_without_country_code}`
-                  : '—';
-                const locationStr = [lead.city, lead.state].filter(Boolean).join(', ');
+
+          {isVirtualized ? (
+            /* VIRTUALIZED RENDERING BODY */
+            <tbody
+              className="divide-y divide-outline-variant/60 text-sm text-on-surface relative"
+              style={{ height: `${totalHeight}px` }}
+            >
+              {virtualItems.map(({ index, offsetTop }) => {
+                const lead = displayRecords[index];
+                if (!lead) return null;
 
                 return (
+                  <tr
+                    key={index}
+                    className="hover:bg-surface-dim/60 transition-colors group absolute left-0 right-0 flex w-full items-center"
+                    style={{ top: `${offsetTop}px`, height: '60px' }}
+                  >
+                    <td className="py-3 px-4 font-semibold text-on-surface w-[180px] truncate shrink-0">
+                      {lead.name || <span className="text-secondary italic">No Name</span>}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-xs text-on-surface/80 w-[200px] truncate shrink-0">
+                      {lead.email || <span className="text-secondary italic font-sans">-</span>}
+                    </td>
+                    <td className="py-3 px-4 font-mono text-xs text-on-surface/80 w-[150px] truncate shrink-0">
+                      {lead.mobile_without_country_code
+                        ? `${lead.country_code || '+91'} ${lead.mobile_without_country_code}`
+                        : '-'}
+                    </td>
+                    <td className="py-3 px-4 w-[200px] truncate shrink-0">
+                      <div className="flex flex-col truncate">
+                        <span className="font-medium text-on-surface truncate">
+                          {lead.company || '-'}
+                        </span>
+                        {(lead.city || lead.state) && (
+                          <span className="text-[11px] text-secondary truncate">
+                            {[lead.city, lead.state].filter(Boolean).join(', ')}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 w-[180px] shrink-0 font-mono text-xs text-on-surface truncate" title={lead.crm_status || ''}>
+                      {lead.crm_status || ''}
+                    </td>
+                    <td className="py-3 px-4 flex-1 text-xs text-secondary truncate" title={lead.crm_note}>
+                      {lead.crm_note || '-'}
+                    </td>
+                    <td className="py-3 px-4 w-[130px] shrink-0 font-mono text-[11px] text-secondary truncate" title={lead.data_source || ''}>
+                      {lead.data_source || ''}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          ) : (
+            /* STANDARD PAGINATED BODY */
+            <tbody className="divide-y divide-outline-variant/60 text-sm text-on-surface">
+              {paginatedRecords.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-secondary font-medium">
+                    No imported records match the current filter criteria.
+                  </td>
+                </tr>
+              ) : (
+                paginatedRecords.map((lead, idx) => (
                   <tr
                     key={idx}
                     className="hover:bg-surface-dim/60 transition-colors group"
                   >
-                    <td className="py-3.5 px-4 font-semibold text-on-surface">
-                      {lead.name || <span className="text-secondary italic">No Name</span>}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-on-surface/80">
-                      {lead.email || <span className="text-secondary italic font-sans">—</span>}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-on-surface/80">
-                      {phoneStr}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-on-surface">
-                          {lead.company || '—'}
-                        </span>
-                        {locationStr && (
-                          <span className="text-xs text-secondary">{locationStr}</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      {renderStatusBadge(lead.crm_status)}
-                    </td>
-                    <td className="py-3.5 px-4 max-w-xs text-xs text-secondary truncate" title={lead.crm_note}>
-                      {lead.crm_note || '—'}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="px-2 py-0.5 rounded text-xs font-mono bg-surface border border-outline-variant text-secondary uppercase">
-                        {lead.data_source || 'Unknown'}
-                      </span>
-                    </td>
+                    {renderRowContent(lead, idx)}
                   </tr>
-                );
-              })
-            )}
-          </tbody>
+                ))
+              )}
+            </tbody>
+          )}
         </table>
       </div>
 
-      <PaginationControls
-        currentPage={currentPage}
-        totalItems={sortedRecords.length}
-        pageSize={pageSize}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={setPageSize}
-      />
+      {!isVirtualized && (
+        <PaginationControls
+          currentPage={currentPage}
+          totalItems={sortedRecords.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+        />
+      )}
     </div>
   );
 };

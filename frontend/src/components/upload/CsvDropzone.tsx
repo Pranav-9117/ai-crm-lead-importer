@@ -11,6 +11,7 @@ export const CsvDropzone: React.FC<CsvDropzoneProps> = ({
   isProcessing = false,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [streamProgress, setStreamProgress] = useState<{ percent: number; rows: number }>({ percent: 0, rows: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileProcessing = useCallback(
@@ -20,9 +21,12 @@ export const CsvDropzone: React.FC<CsvDropzoneProps> = ({
       if (onProcessingChange) {
         onProcessingChange(true);
       }
+      setStreamProgress({ percent: 0, rows: 0 });
 
       try {
-        const { rows, meta } = await parseCsvFile(file);
+        const { rows, meta } = await parseCsvFile(file, (percent, processedRows) => {
+          setStreamProgress({ percent, rows: processedRows });
+        });
         onFileParsed(rows, meta);
       } catch (err: unknown) {
         const errorMessage =
@@ -32,6 +36,7 @@ export const CsvDropzone: React.FC<CsvDropzoneProps> = ({
         if (onProcessingChange) {
           onProcessingChange(false);
         }
+        setStreamProgress({ percent: 0, rows: 0 });
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -80,24 +85,32 @@ export const CsvDropzone: React.FC<CsvDropzoneProps> = ({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className={`w-full max-w-2xl bg-surface-container-lowest rounded-xl border border-outline-variant p-xl text-center flex flex-col items-center transition-all duration-300 hover:shadow-lg relative ${
-        isDragging ? 'scale-[1.01] border-primary bg-surface-container-low' : ''
-      } ${isProcessing ? 'opacity-80 pointer-events-none' : ''}`}
+      className={`w-full max-w-2xl bg-surface-container-lowest rounded-xl border border-outline-variant p-xl text-center flex flex-col items-center transition-all duration-300 hover:shadow-lg relative ${isDragging ? 'scale-[1.01] border-primary bg-surface-container-low' : ''
+        } ${isProcessing ? 'opacity-80 pointer-events-none' : ''}`}
     >
-      {/* Processing Spinner Overlay */}
+      {/* Processing Spinner & Streaming Progress Overlay */}
       {isProcessing && (
         <div
           role="status"
           aria-live="polite"
-          className="absolute inset-0 bg-surface-container-lowest/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center rounded-xl"
+          className="absolute inset-0 bg-surface-container-lowest/90 backdrop-blur-md z-20 flex flex-col items-center justify-center rounded-xl p-lg"
         >
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-sm" />
-          <p className="font-headline-md text-body-lg font-bold text-primary">
-            Parsing CSV file...
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-md" />
+          <p className="font-headline-md text-body-lg font-bold text-on-surface">
+            Streaming & Parsing CSV File...
           </p>
-          <p className="font-mono-sm text-secondary text-xs mt-1">
-            Analyzing columns & validating boundaries in browser memory
+          <p className="font-mono text-secondary text-xs mt-1 mb-md">
+            {streamProgress.rows > 0
+              ? `Streamed ${streamProgress.rows.toLocaleString()} rows (${streamProgress.percent}%)`
+              : 'Analyzing headers & chunking data streams into browser memory...'}
           </p>
+          {/* Animated Progress Bar */}
+          <div className="w-64 max-w-full bg-surface-container-high rounded-full h-2.5 overflow-hidden border border-outline-variant/40">
+            <div
+              className="bg-primary h-2.5 rounded-full transition-all duration-200 ease-out"
+              style={{ width: `${Math.max(streamProgress.percent, 10)}%` }}
+            />
+          </div>
         </div>
       )}
 
@@ -121,7 +134,7 @@ export const CsvDropzone: React.FC<CsvDropzoneProps> = ({
           Upload your first CSV to begin
         </h3>
         <p className="font-body-lg text-body-lg text-secondary max-w-md mx-auto">
-          Quickly map your local spreadsheet data to your CRM leads. Support for .csv, .xlsx, and .tsv formats.
+          Quickly map your local spreadsheet data to your CRM leads. Support for .csv format.
         </p>
       </div>
 
@@ -144,7 +157,7 @@ export const CsvDropzone: React.FC<CsvDropzoneProps> = ({
           ref={fileInputRef}
           id="file-input"
           type="file"
-          accept=".csv,.tsv,.xlsx"
+          accept=".csv"
           className="hidden"
           onChange={handleFileChange}
           disabled={isProcessing}
@@ -157,7 +170,7 @@ export const CsvDropzone: React.FC<CsvDropzoneProps> = ({
             Drag and drop your file here, or{' '}
             <span className="text-primary font-bold">browse local files</span>
           </p>
-          <p className="font-mono-sm text-secondary mt-base opacity-60">Maximum size: 15MB</p>
+          <p className="font-mono-sm text-secondary mt-base opacity-60">Maximum size: 5MB</p>
         </div>
       </div>
 
@@ -172,19 +185,7 @@ export const CsvDropzone: React.FC<CsvDropzoneProps> = ({
         Browse Files
       </button>
 
-      {/* Helper Footer */}
-      <div className="mt-xl pt-lg border-t border-outline-variant/30 w-full flex justify-between items-center">
-        <div className="flex items-center gap-sm text-secondary">
-          <span className="material-symbols-outlined text-sm">verified_user</span>
-          <span className="font-label-md">Secure SSL encryption</span>
-        </div>
-        <div className="flex items-center gap-sm text-secondary">
-          <span className="material-symbols-outlined text-sm">lightbulb</span>
-          <a href="#" className="font-label-md hover:text-primary transition-colors">
-            How to format CSV?
-          </a>
-        </div>
-      </div>
+
     </div>
   );
 };

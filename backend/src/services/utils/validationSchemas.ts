@@ -30,13 +30,13 @@ export const AIOutputRowSchema = z.object({
 
   crm_note: z.string().nullable().optional().transform((val) => val || ''),
   
-  // Strict data source enum verification
+  // Strict data source enum verification: coerce anything outside enum to ""
   data_source: z.preprocess((val) => {
     if (typeof val === 'string' && Object.values(DataSourceEnum).includes(val as DataSourceEnum)) {
       return val;
     }
-    return null;
-  }, z.nativeEnum(DataSourceEnum).nullable()),
+    return '';
+  }, z.union([z.nativeEnum(DataSourceEnum), z.literal('')])),
 
   possession_time: z.string().nullable().optional().transform((val) => val?.trim() || null),
   description: z.string().nullable().optional().transform((val) => val?.trim() || null),

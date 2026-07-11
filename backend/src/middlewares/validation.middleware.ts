@@ -34,7 +34,7 @@ export function validateRequest(schemas: ValidationSchemas) {
           next(
             createAppError(
               'PAYLOAD_EXCEEDS_LIMIT',
-              'Stateless import allows a maximum of 5,000 rows per request',
+              'Stateless import allows a maximum of 50,000 rows per request',
               413,
               { issues: error.issues }
             )

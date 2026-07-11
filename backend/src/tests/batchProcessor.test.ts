@@ -6,7 +6,7 @@ import { executeWithBackoff } from '../services/utils/retryEngine.js';
 import { CSVRow } from '../types/csv.js';
 import { config } from '../utils/config.js';
 
-describe('SPEC-0006 Batch Processing & Retry Framework', () => {
+describe('Batch Processing & Retry Framework', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -50,7 +50,7 @@ describe('SPEC-0006 Batch Processing & Retry Framework', () => {
               lead_owner: null,
               crm_status: null,
               crm_note: '',
-              data_source: null,
+              data_source: "",
               possession_time: null,
               description: null,
               created_at: new Date().toISOString(),
@@ -164,7 +164,7 @@ describe('SPEC-0006 Batch Processing & Retry Framework', () => {
               lead_owner: null,
               crm_status: null,
               crm_note: '',
-              data_source: null,
+              data_source: "",
               possession_time: null,
               description: null,
               created_at: new Date().toISOString(),

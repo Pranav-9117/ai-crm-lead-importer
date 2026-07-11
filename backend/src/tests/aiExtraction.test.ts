@@ -8,7 +8,7 @@ import { CSVRow } from '../types/csv.js';
 
 const server = setupServer();
 
-describe('SPEC-0004 AI Extraction Engine', () => {
+describe('AI Extraction Engine', () => {
   beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
   afterAll(() => server.close());
   afterEach(() => {
