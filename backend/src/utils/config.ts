@@ -8,6 +8,7 @@ const configSchema = z.object({
   OPENAI_MODEL: z.string().default('gpt-4.1-mini'),
   AI_BATCH_SIZE: z.coerce.number().int().positive().default(50),
   MAX_BATCH_RETRIES: z.coerce.number().int().nonnegative().default(3),
+  BATCH_CONCURRENCY_LIMIT: z.coerce.number().int().positive().default(3),
   PORT: z.coerce.number().int().positive().default(3001),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });

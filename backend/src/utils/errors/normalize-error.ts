@@ -12,7 +12,28 @@ export function normalizeError(error: unknown): AppError {
     return error;
   }
 
+  if (
+    error &&
+    typeof error === 'object' &&
+    (('type' in error && (error as { type: unknown }).type === 'entity.too.large') ||
+      ('status' in error && (error as { status: unknown }).status === 413) ||
+      ('statusCode' in error && (error as { statusCode: unknown }).statusCode === 413))
+  ) {
+    return createAppError('PAYLOAD_EXCEEDS_LIMIT', 'Payload exceeds maximum allowed limit', 413);
+  }
+
   if (error instanceof ZodError) {
+    const isPayloadTooLarge = error.issues.some(
+      (issue) => issue.code === 'too_big' && issue.path[0] === 'rows'
+    );
+    if (isPayloadTooLarge) {
+      return createAppError(
+        'PAYLOAD_EXCEEDS_LIMIT',
+        'Stateless import allows a maximum of 5,000 rows per request',
+        413,
+        { issues: error.issues }
+      );
+    }
     return createAppError('VALIDATION_ERROR', 'Request validation failed', 400, {
       issues: error.issues,
     });

@@ -19,16 +19,37 @@ export function validateRequest(schemas: ValidationSchemas) {
         req.body = await schemas.body.parseAsync(req.body);
       }
       if (schemas.query) {
-        req.query = await schemas.query.parseAsync(req.query) as Record<string, any>;
+        req.query = (await schemas.query.parseAsync(req.query)) as unknown as Request['query'];
       }
       if (schemas.params) {
-        req.params = await schemas.params.parseAsync(req.params) as Record<string, any>;
+        req.params = (await schemas.params.parseAsync(req.params)) as unknown as Request['params'];
       }
       next();
     } catch (error) {
       if (error instanceof ZodError) {
+        const isPayloadTooLarge = error.issues.some(
+          (issue) => issue.code === 'too_big' && issue.path[0] === 'rows'
+        );
+        if (isPayloadTooLarge) {
+          next(
+            createAppError(
+              'PAYLOAD_EXCEEDS_LIMIT',
+              'Stateless import allows a maximum of 5,000 rows per request',
+              413,
+              { issues: error.issues }
+            )
+          );
+          return;
+        }
+
+        const isImportEndpoint = req.originalUrl.includes('/import');
+        const code = isImportEndpoint ? 'INVALID_PAYLOAD' : 'VALIDATION_ERROR';
+        const message = isImportEndpoint
+          ? 'Invalid import payload structure'
+          : 'Request validation failed';
+
         next(
-          createAppError('VALIDATION_ERROR', 'Request validation failed', 400, {
+          createAppError(code, message, 400, {
             issues: error.issues,
           })
         );

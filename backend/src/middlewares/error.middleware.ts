@@ -16,15 +16,16 @@ export function errorMiddleware(
 ): void {
   const appError = normalizeError(err);
 
+  if (config.NODE_ENV !== 'production' && err instanceof Error && err.stack) {
+    console.error('Stack Trace:', err.stack);
+  }
+
   const responsePayload: ApiResponse<void> = {
     success: false,
     error: {
       code: appError.code,
       message: appError.message,
       ...(appError.details && { details: appError.details }),
-      ...(config.NODE_ENV !== 'production' && err instanceof Error && err.stack && {
-        stack: err.stack,
-      }),
     },
     meta: {
       timestamp: new Date().toISOString(),
