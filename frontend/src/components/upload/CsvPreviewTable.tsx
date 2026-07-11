@@ -39,7 +39,7 @@ export const CsvPreviewTable: React.FC<CsvPreviewTableProps> = ({
       {/* Table Header / Title Bar */}
       <div className="px-lg py-md border-b border-outline-variant bg-surface-container-low flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div className="flex items-center gap-2.5">
-          <span className="material-symbols-outlined text-primary text-xl">table_chart</span>
+          <TableIcon className="w-5 h-5 text-primary shrink-0" />
           <div>
             <h4 className="font-headline-md text-body-lg font-bold text-on-surface flex items-center gap-2">
               <span>Data Preview Dashboard</span>

@@ -50,7 +50,7 @@ export const ImportedLeadsTable: React.FC<ImportedLeadsTableProps> = ({ records 
 
 
 
-  const renderRowContent = (lead: LeadDTO, idx: number) => {
+  const renderRowContent = (lead: LeadDTO) => {
     const phoneStr = lead.mobile_without_country_code
       ? `${lead.country_code || '+91'} ${lead.mobile_without_country_code}`
       : '-';
@@ -255,7 +255,7 @@ export const ImportedLeadsTable: React.FC<ImportedLeadsTableProps> = ({ records 
                     key={idx}
                     className="hover:bg-surface-dim/60 transition-colors group"
                   >
-                    {renderRowContent(lead, idx)}
+                    {renderRowContent(lead)}
                   </tr>
                 ))
               )}

@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import {
-  Loader2,
   AlertCircle,
   History,
   FileSpreadsheet,
@@ -143,7 +142,7 @@ export default function HomePage() {
                   <FileSpreadsheet className="w-12 h-12 text-secondary/40 mx-auto" />
                   <h4 className="font-semibold text-on-surface">No History Yet</h4>
                   <p className="text-secondary max-w-md font-body-md text-sm leading-relaxed">
-                    You haven't completed any imports during this browser session yet. Switch to the Import CSV tab to upload your first file!
+                    You haven&apos;t completed any imports during this browser session yet. Switch to the Import CSV tab to upload your first file!
                   </p>
                 </div>
               ) : (
