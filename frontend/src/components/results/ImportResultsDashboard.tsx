@@ -61,27 +61,27 @@ export const ImportResultsDashboard: React.FC<ImportResultsDashboardProps> = ({
 
       {/* Action Toolbar & Tab Switcher */}
       <div className="flex flex-col lg:flex-row justify-between items-center gap-4 bg-surface-container p-4 rounded-2xl border border-outline-variant shadow-md">
-        <div className="flex rounded-xl bg-surface p-1 border border-outline-variant w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row rounded-xl bg-surface p-1 border border-outline-variant w-full sm:w-auto gap-1">
           <button
             onClick={() => setActiveTab('imported')}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all flex-1 sm:flex-initial ${
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex-1 sm:flex-initial ${
               activeTab === 'imported'
                 ? 'bg-primary text-on-primary shadow-md'
                 : 'text-secondary hover:text-on-surface'
             }`}
           >
-            <CheckCircle2 className="w-4 h-4" />
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>Successfully Imported ({response.summary.imported})</span>
           </button>
           <button
             onClick={() => setActiveTab('skipped')}
-            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all flex-1 sm:flex-initial ${
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all flex-1 sm:flex-initial ${
               activeTab === 'skipped'
                 ? 'bg-rose-600 text-white shadow-md'
                 : 'text-secondary hover:text-on-surface'
             }`}
           >
-            <AlertTriangle className="w-4 h-4" />
+            <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>Skipped Records ({response.summary.skipped})</span>
           </button>
         </div>
@@ -98,16 +98,16 @@ export const ImportResultsDashboard: React.FC<ImportResultsDashboardProps> = ({
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto justify-end">
             {activeTab === 'imported' ? (
               <button
                 onClick={() =>
                   downloadProcessedCsv(filteredImported, 'processed_crm_leads.csv')
                 }
                 disabled={filteredImported.length === 0}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-semibold rounded-xl shadow transition-all flex items-center justify-center gap-2 whitespace-nowrap flex-1 sm:flex-initial"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs sm:text-sm font-semibold rounded-xl shadow transition-all flex items-center justify-center gap-2 whitespace-nowrap flex-1 sm:flex-initial"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 shrink-0" />
                 <span>Download Processed CSV</span>
               </button>
             ) : (
@@ -116,18 +116,18 @@ export const ImportResultsDashboard: React.FC<ImportResultsDashboardProps> = ({
                   downloadSkippedCsv(filteredSkipped, 'skipped_crm_records.csv')
                 }
                 disabled={filteredSkipped.length === 0}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-sm font-semibold rounded-xl shadow transition-all flex items-center justify-center gap-2 whitespace-nowrap flex-1 sm:flex-initial"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs sm:text-sm font-semibold rounded-xl shadow transition-all flex items-center justify-center gap-2 whitespace-nowrap flex-1 sm:flex-initial"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 shrink-0" />
                 <span>Download Skipped CSV</span>
               </button>
             )}
 
             <button
               onClick={onResetImport}
-              className="px-4 py-2 bg-surface hover:bg-surface-dim text-on-surface text-sm font-semibold rounded-xl border border-outline-variant transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-sm"
+              className="px-4 py-2 bg-surface hover:bg-surface-dim text-on-surface text-xs sm:text-sm font-semibold rounded-xl border border-outline-variant transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-sm flex-1 sm:flex-initial"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-4 h-4 shrink-0" />
               <span>New Import</span>
             </button>
           </div>

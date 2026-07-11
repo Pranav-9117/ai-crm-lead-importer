@@ -17,7 +17,8 @@ export const CsvPreviewTable: React.FC<CsvPreviewTableProps> = ({
   const {
     containerRef,
     virtualItems,
-    totalHeight,
+    startIndex,
+    endIndex,
     handleScroll,
   } = useVirtualScroll<HTMLDivElement>({
     totalItems: displayRows.length,
@@ -111,21 +112,23 @@ export const CsvPreviewTable: React.FC<CsvPreviewTableProps> = ({
 
           {isVirtualized ? (
             /* VIRTUALIZED RENDERING BODY */
-            <tbody
-              className="divide-y divide-outline-variant/50 font-body-md text-xs relative"
-              style={{ height: `${totalHeight}px` }}
-            >
-              {virtualItems.map(({ index, offsetTop }) => {
+            <tbody className="divide-y divide-outline-variant/50 font-body-md text-xs">
+              {startIndex > 0 && (
+                <tr style={{ height: `${startIndex * 41}px` }}>
+                  <td colSpan={columns.length + 1} className="p-0 border-0 m-0" />
+                </tr>
+              )}
+              {virtualItems.map(({ index }) => {
                 const row = displayRows[index];
                 if (!row) return null;
 
                 return (
                   <tr
                     key={index}
-                    className="hover:bg-surface-container-low/60 transition-colors group absolute left-0 right-0 flex w-full"
-                    style={{ top: `${offsetTop}px`, height: '41px' }}
+                    className="hover:bg-surface-container-low/60 transition-colors group"
+                    style={{ height: '41px' }}
                   >
-                    <td className="px-4 py-2 border-r border-outline-variant/60 bg-surface-container-lowest group-hover:bg-surface-container-low/60 text-secondary font-mono sticky left-0 z-10 w-16 text-center select-none flex items-center justify-center shrink-0">
+                    <td className="px-4 py-2 border-r border-outline-variant/60 bg-surface-container-lowest group-hover:bg-surface-container-low/60 text-secondary font-mono sticky left-0 z-10 text-center select-none transition-colors">
                       {index + 1}
                     </td>
                     {columns.map((col, colIdx) => {
@@ -134,11 +137,11 @@ export const CsvPreviewTable: React.FC<CsvPreviewTableProps> = ({
                       return (
                         <td
                           key={`${index}-${colIdx}`}
-                          className="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis min-w-[140px] flex-1 flex items-center"
+                          className="px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis max-w-[240px]"
                           title={hasValue ? String(cellValue) : ''}
                         >
                           {hasValue ? (
-                            <span className="text-on-surface truncate">{cellValue}</span>
+                            <span className="text-on-surface">{cellValue}</span>
                           ) : (
                             <span className="text-secondary/50 italic">null</span>
                           )}
@@ -148,6 +151,11 @@ export const CsvPreviewTable: React.FC<CsvPreviewTableProps> = ({
                   </tr>
                 );
               })}
+              {endIndex < displayRows.length - 1 && (
+                <tr style={{ height: `${(displayRows.length - 1 - endIndex) * 41}px` }}>
+                  <td colSpan={columns.length + 1} className="p-0 border-0 m-0" />
+                </tr>
+              )}
             </tbody>
           ) : (
             /* STANDARD RENDERING BODY */

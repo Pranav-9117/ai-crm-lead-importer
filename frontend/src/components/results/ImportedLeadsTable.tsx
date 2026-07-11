@@ -28,7 +28,8 @@ export const ImportedLeadsTable: React.FC<ImportedLeadsTableProps> = ({ records 
   const {
     containerRef,
     virtualItems,
-    totalHeight,
+    startIndex,
+    endIndex,
     handleScroll,
   } = useVirtualScroll<HTMLDivElement>({
     totalItems: displayRecords.length,
@@ -125,7 +126,7 @@ export const ImportedLeadsTable: React.FC<ImportedLeadsTableProps> = ({ records 
       <div
         ref={containerRef}
         onScroll={isVirtualized ? handleScroll : undefined}
-        className={`${isVirtualized ? 'max-h-[520px] overflow-y-auto' : 'overflow-x-auto'} flex-1 relative scrollbar-thin`}
+        className={`${isVirtualized ? 'max-h-[520px] overflow-auto' : 'overflow-x-auto'} flex-1 relative scrollbar-thin`}
       >
         <table className="w-full text-left border-collapse min-w-[900px]">
           <thead className="sticky top-0 z-20 shadow-sm">
@@ -190,55 +191,31 @@ export const ImportedLeadsTable: React.FC<ImportedLeadsTableProps> = ({ records 
 
           {isVirtualized ? (
             /* VIRTUALIZED RENDERING BODY */
-            <tbody
-              className="divide-y divide-outline-variant/60 text-sm text-on-surface relative"
-              style={{ height: `${totalHeight}px` }}
-            >
-              {virtualItems.map(({ index, offsetTop }) => {
+            <tbody className="divide-y divide-outline-variant/60 text-sm text-on-surface">
+              {startIndex > 0 && (
+                <tr style={{ height: `${startIndex * 60}px` }}>
+                  <td colSpan={7} className="p-0 border-0 m-0" />
+                </tr>
+              )}
+              {virtualItems.map(({ index }) => {
                 const lead = displayRecords[index];
                 if (!lead) return null;
 
                 return (
                   <tr
                     key={index}
-                    className="hover:bg-surface-dim/60 transition-colors group absolute left-0 right-0 flex w-full items-center"
-                    style={{ top: `${offsetTop}px`, height: '60px' }}
+                    className="hover:bg-surface-dim/60 transition-colors group"
+                    style={{ height: '60px' }}
                   >
-                    <td className="py-3 px-4 font-semibold text-on-surface w-[180px] truncate shrink-0">
-                      {lead.name || <span className="text-secondary italic">No Name</span>}
-                    </td>
-                    <td className="py-3 px-4 font-mono text-xs text-on-surface/80 w-[200px] truncate shrink-0">
-                      {lead.email || <span className="text-secondary italic font-sans">-</span>}
-                    </td>
-                    <td className="py-3 px-4 font-mono text-xs text-on-surface/80 w-[150px] truncate shrink-0">
-                      {lead.mobile_without_country_code
-                        ? `${lead.country_code || '+91'} ${lead.mobile_without_country_code}`
-                        : '-'}
-                    </td>
-                    <td className="py-3 px-4 w-[200px] truncate shrink-0">
-                      <div className="flex flex-col truncate">
-                        <span className="font-medium text-on-surface truncate">
-                          {lead.company || '-'}
-                        </span>
-                        {(lead.city || lead.state) && (
-                          <span className="text-[11px] text-secondary truncate">
-                            {[lead.city, lead.state].filter(Boolean).join(', ')}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 w-[180px] shrink-0 font-mono text-xs text-on-surface truncate" title={lead.crm_status || ''}>
-                      {lead.crm_status || ''}
-                    </td>
-                    <td className="py-3 px-4 flex-1 text-xs text-secondary truncate" title={lead.crm_note}>
-                      {lead.crm_note || '-'}
-                    </td>
-                    <td className="py-3 px-4 w-[130px] shrink-0 font-mono text-[11px] text-secondary truncate" title={lead.data_source || ''}>
-                      {lead.data_source || ''}
-                    </td>
+                    {renderRowContent(lead)}
                   </tr>
                 );
               })}
+              {endIndex < displayRecords.length - 1 && (
+                <tr style={{ height: `${(displayRecords.length - 1 - endIndex) * 60}px` }}>
+                  <td colSpan={7} className="p-0 border-0 m-0" />
+                </tr>
+              )}
             </tbody>
           ) : (
             /* STANDARD PAGINATED BODY */

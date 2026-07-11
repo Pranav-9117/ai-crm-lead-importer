@@ -37,11 +37,25 @@ export function useVirtualScroll<T extends HTMLElement = HTMLDivElement>({
 
   // Sync actual viewport height when container mounts or resizes
   useEffect(() => {
-    if (containerRef.current) {
-      const height = containerRef.current.clientHeight || containerHeight;
+    const el = containerRef.current;
+    if (!el) return;
+
+    const updateHeight = () => {
+      const height = el.clientHeight || containerHeight;
       if (height > 0) {
         setViewportHeight(height);
       }
+    };
+
+    updateHeight();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(() => updateHeight());
+      observer.observe(el);
+      return () => observer.disconnect();
+    } else {
+      window.addEventListener('resize', updateHeight);
+      return () => window.removeEventListener('resize', updateHeight);
     }
   }, [containerHeight]);
 

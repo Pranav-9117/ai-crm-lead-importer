@@ -20,6 +20,7 @@ import { CSVRow, CsvFileMetadata, ImportResponseDTO } from '../types';
 
 export default function HomePage() {
   const [navTab, setNavTab] = useState<'import' | 'history'>('import');
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState<boolean>(false);
   const [importResult, setImportResult] = useState<ImportResponseDTO | null>(null);
   const [isImporting, setIsImporting] = useState<boolean>(false);
   const [importError, setImportError] = useState<string | null>(null);
@@ -96,21 +97,28 @@ export default function HomePage() {
       {/* SideNavBar Shell */}
       <SideNavBar
         activeTab={navTab}
-        onTabChange={(tab) => setNavTab(tab)}
+        isMobileOpen={isMobileNavOpen}
+        onClose={() => setIsMobileNavOpen(false)}
+        onTabChange={(tab) => {
+          setNavTab(tab);
+          setIsMobileNavOpen(false);
+        }}
         onNewImport={() => {
           handleReset();
           setNavTab('import');
+          setIsMobileNavOpen(false);
         }}
       />
 
       {/* TopAppBar Shell */}
       <TopAppBar
         title={navTab === 'history' ? 'Import History' : 'Import CSV'}
+        onOpenMobileNav={() => setIsMobileNavOpen(true)}
       />
 
       {/* Main Content Canvas */}
-      <main className="ml-[260px] pt-16 min-h-screen">
-        <div className="max-w-container-max mx-auto p-xl flex flex-col items-center justify-center min-h-[calc(100vh-64px)] relative">
+      <main className="ml-0 lg:ml-[260px] pt-16 min-h-screen transition-all duration-300">
+        <div className="max-w-container-max mx-auto p-4 sm:p-xl flex flex-col items-center justify-center min-h-[calc(100vh-64px)] relative w-full overflow-x-hidden">
           {/* Render Active Tab Content */}
           {navTab === 'history' ? (
             /* TAB: Import History */
