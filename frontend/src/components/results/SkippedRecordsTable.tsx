@@ -23,7 +23,7 @@ export const SkippedRecordsTable: React.FC<SkippedRecordsTableProps> = ({ record
       <div className="overflow-x-auto flex-1">
         <table className="w-full text-left border-collapse min-w-[700px]">
           <thead>
-            <tr className="border-b border-outline-variant bg-surface/80 text-secondary text-xs font-label-md uppercase tracking-wider">
+            <tr className="border-b border-outline-variant bg-surface/80 text-secondary text-xs font-label-md uppercase tracking-wider font-bold">
               <th className="py-3.5 px-6 w-24">Row #</th>
               <th className="py-3.5 px-6">Reason for Skip</th>
               <th className="py-3.5 px-6">Original Row Preview</th>
@@ -49,12 +49,12 @@ export const SkippedRecordsTable: React.FC<SkippedRecordsTableProps> = ({ record
                     key={skip.row_number}
                     className="hover:bg-surface-dim/60 transition-colors group"
                   >
-                    <td className="py-4 px-6 font-mono font-bold text-amber-400">
+                    <td className="py-4 px-6 font-mono font-bold text-rose-400">
                       #{skip.row_number}
                     </td>
                     <td className="py-4 px-6">
-                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold">
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                         <span>{skip.reason}</span>
                       </div>
                     </td>

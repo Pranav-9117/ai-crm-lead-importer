@@ -52,16 +52,16 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
       </div>
 
       {/* Skipped Records Card */}
-      <div className="p-5 rounded-2xl bg-surface-container border border-outline-variant flex items-center justify-between shadow-sm transition-all hover:border-amber-500/50">
+      <div className="p-5 rounded-2xl bg-surface-container border border-outline-variant flex items-center justify-between shadow-sm transition-all hover:border-rose-500/50">
         <div className="space-y-1">
           <span className="text-xs font-label-md text-secondary tracking-wide uppercase">
             Skipped Records
           </span>
-          <p className="text-2xl font-bold text-amber-400">
+          <p className="text-2xl font-bold text-rose-400">
             {totalSkipped.toLocaleString()}
           </p>
         </div>
-        <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
+        <div className="w-12 h-12 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400">
           <AlertTriangle className="w-6 h-6" />
         </div>
       </div>

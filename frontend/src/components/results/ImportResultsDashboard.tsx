@@ -77,7 +77,7 @@ export const ImportResultsDashboard: React.FC<ImportResultsDashboardProps> = ({
             onClick={() => setActiveTab('skipped')}
             className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all flex-1 sm:flex-initial ${
               activeTab === 'skipped'
-                ? 'bg-amber-600 text-white shadow-md'
+                ? 'bg-rose-600 text-white shadow-md'
                 : 'text-secondary hover:text-on-surface'
             }`}
           >
@@ -116,7 +116,7 @@ export const ImportResultsDashboard: React.FC<ImportResultsDashboardProps> = ({
                   downloadSkippedCsv(filteredSkipped, 'skipped_crm_records.csv')
                 }
                 disabled={filteredSkipped.length === 0}
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-sm font-semibold rounded-xl shadow transition-all flex items-center justify-center gap-2 whitespace-nowrap flex-1 sm:flex-initial"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-sm font-semibold rounded-xl shadow transition-all flex items-center justify-center gap-2 whitespace-nowrap flex-1 sm:flex-initial"
               >
                 <Download className="w-4 h-4" />
                 <span>Download Skipped CSV</span>

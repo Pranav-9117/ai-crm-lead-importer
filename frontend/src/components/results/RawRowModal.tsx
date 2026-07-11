@@ -52,11 +52,11 @@ export const RawRowModal: React.FC<RawRowModalProps> = ({
         {/* Modal Body */}
         <div className="p-6 space-y-4 overflow-y-auto flex-1">
           {/* Reason Badge / Alert */}
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col gap-1">
-            <span className="text-xs font-label-md uppercase tracking-wider text-amber-400">
+          <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 flex flex-col gap-1">
+            <span className="text-xs font-label-md uppercase tracking-wider text-rose-400">
               Skip Reason
             </span>
-            <p className="text-sm font-semibold text-amber-300">{reason}</p>
+            <p className="text-sm font-semibold text-rose-300">{reason}</p>
           </div>
 
           {/* Raw JSON Data Viewer */}
@@ -82,7 +82,7 @@ export const RawRowModal: React.FC<RawRowModalProps> = ({
                 )}
               </button>
             </div>
-            <pre className="p-4 rounded-xl bg-surface border border-outline-variant text-xs font-mono text-slate-300 overflow-x-auto max-h-[400px] leading-relaxed">
+            <pre className="p-4 rounded-xl bg-surface-container border border-outline-variant text-xs font-mono text-on-surface overflow-x-auto max-h-[400px] leading-relaxed">
               <code>{jsonString}</code>
             </pre>
           </div>

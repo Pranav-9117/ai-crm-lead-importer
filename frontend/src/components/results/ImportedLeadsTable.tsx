@@ -84,7 +84,7 @@ export const ImportedLeadsTable: React.FC<ImportedLeadsTableProps> = ({ records 
       <div className="overflow-x-auto flex-1">
         <table className="w-full text-left border-collapse min-w-[900px]">
           <thead>
-            <tr className="border-b border-outline-variant bg-surface/80 text-secondary text-xs font-label-md uppercase tracking-wider">
+            <tr className="border-b border-outline-variant bg-surface/80 text-secondary text-xs font-label-md uppercase tracking-wider font-bold">
               <th
                 onClick={() => requestSort('name')}
                 className="py-3.5 px-4 cursor-pointer group hover:text-on-surface transition-colors select-none"
@@ -164,10 +164,10 @@ export const ImportedLeadsTable: React.FC<ImportedLeadsTableProps> = ({ records 
                     <td className="py-3.5 px-4 font-semibold text-on-surface">
                       {lead.name || <span className="text-secondary italic">No Name</span>}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-slate-300">
+                    <td className="py-3.5 px-4 font-mono text-xs text-on-surface/80">
                       {lead.email || <span className="text-secondary italic font-sans">—</span>}
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-xs text-slate-300">
+                    <td className="py-3.5 px-4 font-mono text-xs text-on-surface/80">
                       {phoneStr}
                     </td>
                     <td className="py-3.5 px-4">

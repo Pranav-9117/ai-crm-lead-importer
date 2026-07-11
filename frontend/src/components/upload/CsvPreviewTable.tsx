@@ -42,7 +42,7 @@ export const CsvPreviewTable: React.FC<CsvPreviewTableProps> = ({
         className="max-h-[480px] overflow-auto relative scrollbar-thin focus:outline-none focus:ring-1 focus:ring-primary"
       >
         <table className="w-full text-left text-sm text-on-surface border-collapse">
-          <thead className="bg-surface-container-high text-xs uppercase tracking-wider text-on-surface-variant font-label-md sticky top-0 z-20 shadow-sm">
+          <thead className="bg-surface-container-high text-xs uppercase tracking-wider text-secondary font-label-md sticky top-0 z-20 shadow-sm">
             <tr>
               <th
                 scope="col"

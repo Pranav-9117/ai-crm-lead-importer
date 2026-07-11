@@ -105,7 +105,7 @@ export const CsvDropzone: React.FC<CsvDropzoneProps> = ({
       <div className="relative w-48 h-48 mb-lg flex items-center justify-center">
         <div className="absolute inset-0 bg-primary/5 rounded-full animate-pulse" />
         <div className="absolute inset-4 bg-primary/10 rounded-full animate-pulse delay-75" />
-        <div className="z-10 bg-white shadow-xl rounded-2xl p-md border border-outline-variant/30 transform transition-transform hover:-translate-y-1">
+        <div className="z-10 bg-surface shadow-xl rounded-2xl p-md border border-outline-variant/30 transform transition-transform hover:-translate-y-1">
           <span
             className="material-symbols-outlined text-[64px] text-primary"
             style={{ fontVariationSettings: "'FILL' 0, 'wght' 200" }}
