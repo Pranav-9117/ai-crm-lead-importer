@@ -3,10 +3,11 @@
   "version": "2.0.0",
   "description": "Stateless Express + TypeScript API Server for AI CRM Lead Importer v2.0",
   "private": true,
+  "type": "module",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc && node -e \"import('fs').then(fs => { fs.mkdirSync('dist/prompts', { recursive: true }); fs.copyFileSync('src/prompts/prompt_v1.md', 'dist/prompts/prompt_v1.md'); })\"",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
@@ -16,6 +17,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "openai": "^6.46.0",
     "p-limit": "^5.0.0",
     "zod": "^3.23.8"
   },
@@ -26,6 +28,7 @@
     "@typescript-eslint/eslint-plugin": "^8.63.0",
     "@typescript-eslint/parser": "^8.63.0",
     "eslint": "^8.57.0",
+    "msw": "^2.15.0",
     "prettier": "^3.3.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.16.2",
